@@ -1,0 +1,12 @@
+{
+  "name": "price-scrapper-2000",
+  "version": "0.0.1",
+  "description": "Used for Scrapping Prices From any Page",
+  "devDependencies": {
+    "phantom": ">=0.7.1",
+    "grunt": ">=0.4.2",
+    "grunt-contrib-nodeunit": ">=0.4.1",
+    "underscore":">=1.7.0",
+    "promise":">=6.0.1"
+  }
+}
