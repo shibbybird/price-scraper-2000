@@ -1,3 +1,12 @@
+var fs = require('fs')
+var path = require('path')
+var Request = require("../src/phantom-request");
+var request = new Request();
+
+var PriceScrapper = require("../src/price-scrapper");
+var priceScrapper = new PriceScrapper();
+
+
 /*
   ======== A Handy Little Nodeunit Reference ========
   https://github.com/caolan/nodeunit
@@ -19,13 +28,37 @@
 */
 
 exports['scrapper'] = {
-  setUp: function(done) {
-    done();
-  },
-  'This Should Be True': function(test) {
-    test.expect(1);
 
-    test.equal(true, true);
-    test.done();
+  setUp: function(done) {
+
+    done();
+
+  },
+  'Test Crate and Barrel Price Scrapping': function(test) {
+    test.expect(2);
+
+    fs.readFile(path.resolve(__dirname, 'createbarrelbody.txt'), 'UTF-8', function( err, data ){
+      console.log("SCRAPPER: Crate and Barrel")
+
+      prices = priceScrapper.getPricesFromBody( data );
+      console.log( prices )
+
+      test.ok(true, "Ahhh!")
+      test.ok( true, "BODY IS NULL" )
+
+      test.done();
+    });
+
+
   }
 };
+
+/*
+
+fs.readFile(path.resolve(__dirname, 'createbarrelbody.txt'), 'UTF-8', function( err, data ){
+  console.log("SCRAPPER: Crate and Barrel")
+
+  prices = priceScrapper.getPricesFromBody( data );
+  console.log( prices )
+});
+*/

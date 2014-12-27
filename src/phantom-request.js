@@ -51,12 +51,12 @@ var Request = (function(){
       options = _.extend( this.defaultRequestOptions, options )
 
       _this._phantomCreate().then(function( ph ){
-        console.log( "Create Phantom" )
+
         phant = ph;
         return _this._createPage(ph)
 
       }).then( function( pages ){
-        console.log( "Create Page" )
+
         page = pages;
         page.set( 'userAgent', options.userAgent );
         page.set( 'viewportSize', {
@@ -70,17 +70,17 @@ var Request = (function(){
         return _this._open( url, page )
 
       }).then( function( status ){
-        console.log( "Open Page" )
+
         return _this._evaluate( status )
 
       }).then( function( dom ){
-        console.log( "Get Result" )
+
         page.close()
         phant.exit()
         callback( null, dom )
 
       }).catch( function(err){
-        console.log( "Err Occurred" + err )
+
         page.close()
         phant.exit()
         callback( err, null )

@@ -35,34 +35,38 @@ var PriceScrapper = (function(){
 
     getPricesFromBody: function( bodyStr ){
 
-      var $ = cheerio.load(bodyStr);
+      var $ = cheerio.load( "<body>" + bodyStr + "</body>" );
 
       var bodyEl = $('body');
 
       var prices = {}
 
-      this._getPrices( bodyEl, prices, [] )
+      this._getPrices( $, bodyEl, prices, [] )
 
-      return
-
-    },
-
-    getPricesFromBody: function( xpathSelector ){
-
-
+      return prices;
 
     },
 
-    _getPrices: function( element, prices, selectors ){
-      var selector, el, sels;
+    getPriceFromBody: function( selector, bodyStr ){
 
-      if( element.children().length > 0 ){
+      var $ = cheerio.load("<body>" + bodyStr + "</body>");
+      var bodyEl = $('body');
+      return this._findPrices( bodyEl( selector ) )[0]
 
-        for( var i = 0; i < element.children().length; i++ ){
+    },
 
-          el = element.children().get( i )
+    _getPrices: function( $, element, prices, selectors, index ){
 
-          selector = this._getSelector(el);
+      var selector, el, sels
+      , _this = this;
+
+      if( element.children && element.children().length > 0 ){
+
+        element.children().each( function( i, ele ) {
+
+          var el = $(ele);
+
+          selector = _this._getSelectorAttribute( el );
 
           if( selector ){
 
@@ -71,37 +75,76 @@ var PriceScrapper = (function(){
           }
 
 
-          sels = this._clone( selectors )
+          sels = _this._clone( selectors )
 
-          this.getPrices( el, prices, sel )
+          _this._getPrices( $, el, prices, sels, i )
 
-        }
+        })
 
 
       } else {
+        p = this._findPrices(element.html())
+        if( p.length > 0 ){
+          prices[p[0]] = {
 
+            selector: this._createSelectorFromArray( selectors ),
 
+            index : index
+
+          }
+        }
 
       }
 
     },
 
-    _getSelector: function( element ){
+    _getSelectorAttribute: function( element ){
+      var sel = element.attr( "class" ) ? this._getClass( element.attr( "class" )) : null;
 
-      return element.attr( "id" ) ? ( "#" + element.attr( "id" ) )
-        : element.attr( "class" ) ? ("."+ this._getClass( element.attr( "class" ) ) ) : null;
+      if(sel && sel.indexOf("undefined") >= 0){
+        sel = null;
+      }
+
+      return sel
 
     },
 
-    _getClass: function( class ){
+    _createSelectorFromArray: function( selArray ){
+      console.log(selArray)
+
+      var count = 0
+      , selector = "";
+      for( var i = (selArray.length-1); i >= 0; i-- ){
+
+        if( count >= 0 ){
+          selector += " ";
+        }
+
+        if( count < 3 ){
+
+          selector += selArray[i]
+          count++;
+
+        } else {
+
+          break;
+
+        }
+
+      }
+
+      return selector
+    },
+
+    _getClass: function( clss ){
 
       var c, cArray;
 
-      cArray = class.split(" ")
+      cArray = clss.split(" ")
 
       if( cArray.length > 1 ){
 
-        c = cArray;
+        c = cArray[0];
 
       }
 
@@ -113,6 +156,14 @@ var PriceScrapper = (function(){
 
       return JSON.parse( JSON.stringify( object ) )
 
+    },
+
+    _findPrices: function( text ){
+
+      var priceArray = /([$€£][0-9,]+(\.[0-9]{2})?)/g.exec(text)
+
+      return _.uniq( priceArray, false )
+
     }
 
 
@@ -120,7 +171,7 @@ var PriceScrapper = (function(){
   };
 
 
-  request.prototype = _.extend( scrapper.prototype, proto );
+  scrapper.prototype = _.extend( scrapper.prototype, proto );
 
   return scrapper;
 

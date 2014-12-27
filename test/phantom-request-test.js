@@ -34,7 +34,7 @@ exports['request'] = {
 
   },
 
-  'Phantom Request Google Test': function(test) {
+  'Phantom Request Google Test': function( test ) {
     test.expect(2);
 
     var requestTimeout = setTimeout(function(){
