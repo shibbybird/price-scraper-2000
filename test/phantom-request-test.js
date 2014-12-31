@@ -79,9 +79,37 @@ exports['request'] = {
       clearTimeout(requestTimeout)
 
       if( !err ){
-        //console.log(result)
-        console.log("Crate and Barrel")
+        console.log("Crate and Barrel Finished!")
         test.equal( "All-Clad ® d5 10-Piece Cookware Set | Crate and Barrel", result.title );
+        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" )
+
+      } else {
+
+        test.ok( false, err )
+
+      }
+
+      test.done();
+
+    });
+
+  },
+
+  'Phantom Request Dicks Sporting Test': function(test) {
+    test.expect(1);
+
+    var requestTimeout = setTimeout(function(){
+
+      test.ok( false, "REQUEST TIMED OUT!" )
+
+    }, 180000)
+
+    request.getDomFromUrl( "http://www.dickssportinggoods.com/product/index.jsp?productId=46722916&ab=TopNav_Footwear_MensFootwear_Basketball&cp=4413987.4417989", {}, function( err, result ){
+
+      clearTimeout(requestTimeout)
+
+      if( !err ){
+        console.log("Dicks Sporting Goods Finished!")
         test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" )
 
       } else {

@@ -16,7 +16,7 @@ module.exports = function( grunt ) {
     pkg: grunt.file.readJSON( 'package.json' ),
 
     nodeunit: {
-      all: ['test/*-test.js'],//['test/phantom-request-test.js'],//['test/price-scrapper-test.js'],//['test/*-test.js'],
+      all: ['test/*-test.js'],
       options: {
         reporter: 'junit',
         reporterOptions: {

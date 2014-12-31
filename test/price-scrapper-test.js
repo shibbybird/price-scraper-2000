@@ -38,27 +38,16 @@ exports['scrapper'] = {
     test.expect(2);
 
     fs.readFile(path.resolve(__dirname, 'createbarrelbody.txt'), 'UTF-8', function( err, data ){
+
       console.log("SCRAPPER: Crate and Barrel")
-
       prices = priceScrapper.getPricesFromBody( data );
-      console.log( prices )
-
-      test.ok(true, "Ahhh!")
-      test.ok( true, "BODY IS NULL" )
+      test.ok( prices != null, "Prices Not Returned" )
+      test.ok( priceScrapper.getPriceFromBody( prices["899.95"].selector, data ) == "899.95", "Price Doesn't Match Scrapped Pricee $899.95")
 
       test.done();
+
     });
 
 
   }
 };
-
-/*
-
-fs.readFile(path.resolve(__dirname, 'createbarrelbody.txt'), 'UTF-8', function( err, data ){
-  console.log("SCRAPPER: Crate and Barrel")
-
-  prices = priceScrapper.getPricesFromBody( data );
-  console.log( prices )
-});
-*/

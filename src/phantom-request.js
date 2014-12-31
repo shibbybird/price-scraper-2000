@@ -108,6 +108,7 @@ var Request = (function(){
 
         phantom.create("--web-security=no"
         , "--ignore-ssl-errors=yes"
+        , "--load-images=false"
         , function( ph ){
 
           if( ph ){
@@ -271,7 +272,9 @@ var Request = (function(){
 
         height: 650
 
-      }
+      },
+
+      resourceTimeout: 5000
 
     }
 
