@@ -1,16 +1,15 @@
-var _ = require('underscore')
-, phantom = require('phantom')
-, Promise = Promise || require('promise');
+var _ = require('underscore'),
+  phantom = require('phantom'),
+  Promise = Promise || require('promise');
+
+if( !global.currentPort ){
+  global.currentPort = 49152;
+}
 
 
 var Request = (function(){
 
-  var request = function(){
-
-
-
-  }
-
+  var request = function(){};
 
   var proto = {
 
@@ -46,14 +45,22 @@ var Request = (function(){
 
     getDomFromUrl: function( url, options, callback ){
 
-      var _this = this, phant = null, page = null;
+      var _this = this, phant = null, page = null, port, opt;
 
-      options = _.extend( this.defaultRequestOptions, options )
+      options = _.extend( this.defaultRequestOptions, options );
 
-      _this._phantomCreate().then(function( ph ){
+      port = this.getPort();
+
+      opt = {
+
+        port: port
+
+      };
+
+      _this._phantomCreate(opt).then(function( ph ){
 
         phant = ph;
-        return _this._createPage(ph)
+        return _this._createPage( ph );
 
       }).then( function( pages ){
 
@@ -66,26 +73,37 @@ var Request = (function(){
           height: options.viewport.height
 
         });
+        page.set( 'settings.resourceTimeout', options.timeout );
 
-        return _this._open( url, page )
+        return _this._open( url, page );
 
       }).then( function( status ){
 
-        return _this._evaluate( status )
+        return _this._evaluate( status );
 
       }).then( function( dom ){
 
-        page.close()
-        phant.exit()
-        callback( null, dom )
+        page.close();
+        phant.exit();
+
+        if ( !dom.indexOf || dom.indexOf("ERROR") !== 0 ){
+          try {
+            callback( null, dom );
+          } catch(e){
+            console.error("ERROR: " + err.stack);
+          }
+        }
+
+
+        return null;
 
       }).catch( function(err){
+        console.error(err.stack);
+        page.close();
+        phant.exit();
+        callback( err, null );
 
-        page.close()
-        phant.exit()
-        callback( err, null )
-
-      })
+      });
 
     },
 
@@ -106,10 +124,10 @@ var Request = (function(){
 
       return new Promise( function( resolve, reject ){
 
-        phantom.create("--web-security=no"
-        , "--ignore-ssl-errors=yes"
-        , "--load-images=false"
-        , function( ph ){
+        phantom.create("--web-security=no",
+        "--ignore-ssl-errors=yes",
+        "--load-images=false",
+        function( ph ){
 
           if( ph ){
 
@@ -117,13 +135,13 @@ var Request = (function(){
 
           } else {
 
-            reject( "Could not build Phantom Object" )
+            reject( "ERROR: Could not build Phantom Object" );
 
           }
 
         });
 
-      })
+      });
 
     },
 
@@ -152,7 +170,7 @@ var Request = (function(){
 
           } else {
 
-            reject( "Page was not created!" );
+            reject( "ERROR: Page was not created!" );
 
           }
 
@@ -160,7 +178,7 @@ var Request = (function(){
 
       })).then(function( page ){
 
-        return page
+        return page;
 
       });
 
@@ -192,7 +210,7 @@ var Request = (function(){
 
           } else {
 
-            reject( "Status failed with: " + status );
+            reject( "ERROR: Status failed with: " + status );
 
           }
 
@@ -200,7 +218,7 @@ var Request = (function(){
 
       })).then(function( status ){
 
-        return status
+        return status;
 
       });
 
@@ -225,7 +243,7 @@ var Request = (function(){
 
           page.evaluate( function () {
 
-            result = {
+            var result = {
 
               title: document.title,
 
@@ -235,12 +253,11 @@ var Request = (function(){
 
               scripts: document.scripts
 
-            }
+            };
 
-            return result
+            return result;
 
-          }
-          , function ( result ) {
+          }, function ( result ) {
 
             if( result ){
 
@@ -248,7 +265,7 @@ var Request = (function(){
 
             } else {
 
-              reject( "Document NULL!" );
+              reject( "ERROR: Failed to Evaluate" );
 
             }
 
@@ -256,9 +273,24 @@ var Request = (function(){
 
       })).then(function( result ){
 
-        return result
+        return result;
 
       });
+
+    },
+
+    getPort: function(){
+      if( global.currentPort < 65535 ){
+
+        global.currentPort++;
+        return global.currentPort;
+
+      } else {
+
+        global.currentPort = 49152;
+        return global.currentPort;
+
+      }
 
     },
 
@@ -274,7 +306,7 @@ var Request = (function(){
 
       },
 
-      resourceTimeout: 5000
+      timeout: 5000
 
     }
 
@@ -286,7 +318,7 @@ var Request = (function(){
   return request;
 
 
-})()
+})();
 
 
 module.exports = Request;

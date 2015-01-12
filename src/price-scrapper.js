@@ -1,26 +1,20 @@
-var _ = require('underscore')
-, cheerio = require('cheerio');
+var _ = require('underscore'),
+  cheerio = require('cheerio'),
+  request = new (require( './phantom-request' ))();
 
 
-var PriceScrapper = (function(){
+var PriceScrapper = ( function(){
 
-  var scrapper = function(){
-
-
-
-  }
+  var scrapper = function(){};
 
 
   var proto = {
 
-    constructor: function(){
-
-
-    },
+    constructor: function(){},
 
     /**
     *
-    * getPricesFromBody
+    * getPricesFromURL
     *
     * Parameters:
     *  url: URL of site you want to get dom of
@@ -29,38 +23,126 @@ var PriceScrapper = (function(){
     *  callback:
     *     returns:
     *        err: Any err string that occured while pulling dom
-    *        prices: JSON object of prices key and the corresponding selector
+    *        pricesArray: [{ price: "$400.00", index: 0, selector: ".class"}]
     *
     **/
 
-    getPricesFromBody: function( bodyStr ){
+    getPricesFromURL: function( url, callback ){
+      var _this = this, prices = null;
 
-      var $ = cheerio.load( "<body>" + bodyStr + "</body>" );
+      request.getDomFromUrl( url, {}, function( err, result ){
 
-      var bodyEl = $('body');
+        if( !err ){
 
-      var prices = {}
+          prices = _this.getPricesFromBodyInnerHTML( result.body.innerHTML );
 
-      this._getPrices( $, bodyEl, prices, [] )
+          callback( null, prices );
+
+        } else {
+
+          callback( err, prices );
+
+        }
+
+      });
+
+    },
+
+    getPriceFromURL: function( selector, index, url, callback ){
+      var _this = this, price = null;
+
+      request.getDomFromUrl( url, {}, function( err, result ){
+
+        if( !err ){
+
+          price = _this.getPriceFromBodyInnerHTML( selector, result.body.innerHTML, index );
+
+          callback( null, price );
+
+        } else {
+
+          callback( err, price );
+
+        }
+
+      });
+
+    },
+
+    /**
+    *
+    * getPricesFromBodyInnerHTML
+    *
+    * Parameters:
+    *  bodyStr: body.innerHTML <- use this
+    *  options:
+    *   ( See this.defaultRequestOptions )
+    *  callback:
+    *     returns:
+    *        err: Any err string that occured while pulling dom
+    *        pricesArray: [{ price: "$400.00", index: 0, selector: ".class"}]
+    *
+    **/
+
+    getPricesFromBodyInnerHTML: function( bodyStr ){
+
+      var $ = cheerio.load( "<body>" + bodyStr + "</body>" ),
+        bodyEl = $('body'), prices = [], el = null,
+        price = null, idxPrice = null,
+        _this = this;
+
+      this._getPrices( $, bodyEl, prices, [] );
+
+      /* This loop is used to get indexes for selectors collected*/
+      /* TODO: Probably should clean this up */
+      /*jshint loopfunc: true */
+      for( var i = 0; i < prices.length; i++ ){
+
+        price = prices[i];
+        el = $( price.selector );
+        el.each( function( n, ele ) {
+
+          element = $( ele );
+          idxPrice = _this._findPrices( element.html() );
+
+          if( idxPrice !== null && idxPrice[0] === price.price ){
+
+            price.index = n;
+
+          }
+
+        });
+
+      }
 
       return prices;
 
     },
 
-    getPriceFromBody: function( selector, bodyStr ){
+    getPriceFromBodyInnerHTML: function( selector, bodyStr, idx ){
 
-      var $ = cheerio.load( "<body>" + bodyStr + "</body>" );
+      var $ = cheerio.load( "<body>" + bodyStr + "</body>" ),
+        bodyEl = $(selector),
+        price = null,
+        index = idx ? idx : 0;
 
-      var bodyEl = $(selector);
+      try {
 
-      return this._findPrices( bodyEl.html() )[0].replace(/[$€£]/g,"")
+        price = this._findPrices( $(bodyEl[index]).html() )[0];
+
+      } catch (e) {
+
+        return false;
+
+      }
+
+      return price;
 
     },
 
     _getPrices: function( $, element, prices, selectors, index ){
 
-      var selector, el, sels
-      , _this = this;
+      var selector, el, sels, _this = this;
 
       if( element.children && element.children().length > 0 ){
 
@@ -70,32 +152,36 @@ var PriceScrapper = (function(){
 
           selector = _this._getSelectorAttribute( el );
 
-          sels = _this._clone( selectors )
+          sels = _this._clone( selectors );
 
           if( selector ){
 
-            sels.push( selector )
+            sels.push( selector );
+
+          } else if ( el.children().length <= 0 ) {
+
+            sels.push( el[0].name );
 
           }
 
-          _this._getPrices( $, el, prices, sels, i )
+          _this._getPrices( $, el, prices, sels, i );
 
-        })
+        });
 
 
       } else {
 
-        var p = this._findPrices(element.html())
+        var p = this._findPrices( element.html() );
 
-        if( p.length > 0 ){
+        if( p && p.length > 0 ){
 
-          prices[p[0].replace(/[$€£]/g,"")] = {
+          prices.push({
 
-            selector: this._createSelectorFromArray( selectors ),
+            price: p[0],
 
-            index : index
+            selector: this._createSelectorFromArray( selectors )
 
-          }
+          });
 
         }
 
@@ -111,7 +197,7 @@ var PriceScrapper = (function(){
         sel = null;
       }
 
-      return sel
+      return sel;
 
     },
 
@@ -125,18 +211,18 @@ var PriceScrapper = (function(){
           selector += " ";
         }
 
-        selector += selArray[i]
+        selector += selArray[i];
 
       }
 
-      return selector
+      return selector;
     },
 
     _getClass: function( clss ){
 
       var c, cArray;
 
-      cArray = clss.split(" ")
+      cArray = clss.split(" ");
 
       if( cArray.length > 0 ){
 
@@ -144,29 +230,26 @@ var PriceScrapper = (function(){
 
       } else {
 
-        c = clss
+        c = clss;
 
       }
 
-      return c
+      return c;
 
     },
 
     _clone: function( object ){
 
-      return JSON.parse( JSON.stringify( object ) )
+      return JSON.parse( JSON.stringify( object ) );
 
     },
 
     _findPrices: function( text ){
 
-      var priceArray = /([$€£][0-9,]+(\.[0-9]{2})?)/g.exec(text)
-
-      return _.uniq( priceArray, false )
+      var priceArray = text.match(/([$€£][0-9,]+(\.[0-9]{2})?)/g);
+      return priceArray;
 
     }
-
-
 
   };
 
@@ -175,7 +258,7 @@ var PriceScrapper = (function(){
   return scrapper;
 
 
-})()
+})();
 
 
 module.exports = PriceScrapper;

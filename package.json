@@ -1,5 +1,5 @@
 {
-  "name": "price-scrapper-2000",
+  "name": "price-scrapper",
   "version": "0.0.1",
   "description": "Used for Scrapping Prices From any Page",
   "devDependencies": {
@@ -8,6 +8,7 @@
     "grunt-contrib-nodeunit": ">=0.4.1",
     "underscore":">=1.7.0",
     "promise":">=6.0.1",
-    "cheerio": ">=0.18.0"
+    "cheerio": ">=0.18.0",
+    "grunt-contrib-jshint": ">=0.10.0"
   }
 }

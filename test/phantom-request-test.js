@@ -1,7 +1,4 @@
-
-
 var Request = require("../src/phantom-request");
-
 var request = new Request();
 
 
@@ -25,12 +22,10 @@ var request = new Request();
     test.ifError(value)
 */
 
-exports['request'] = {
+exports.request = {
   setUp: function(done) {
 
     done();
-
-
 
   },
 
@@ -39,23 +34,23 @@ exports['request'] = {
 
     var requestTimeout = setTimeout(function(){
 
-      test.ok( false, "REQUEST TIMED OUT!" )
+      test.ok( false, "REQUEST TIMED OUT!" );
 
-    }, 180000)
+    }, 180000);
 
     request.getDomFromUrl( "https://www.google.com", {}, function( err, result ){
 
-      clearTimeout(requestTimeout)
+      clearTimeout(requestTimeout);
 
       if( !err ){
         //console.log(result)
-        console.log("Google Finished!")
+        console.log("Google Finished!");
         test.equal( "Google", result.title );
-        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" )
+        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" );
 
       } else {
 
-        test.ok( false, err )
+        test.ok( false, err );
 
       }
 
@@ -70,22 +65,22 @@ exports['request'] = {
 
     var requestTimeout = setTimeout(function(){
 
-      test.ok( false, "REQUEST TIMED OUT!" )
+      test.ok( false, "REQUEST TIMED OUT!" );
 
-    }, 180000)
+    }, 180000);
 
     request.getDomFromUrl( "http://www.crateandbarrel.com/all-clad-d5-10-piece-cookware-set/f59165", {}, function( err, result ){
 
-      clearTimeout(requestTimeout)
+      clearTimeout(requestTimeout);
 
       if( !err ){
-        console.log("Crate and Barrel Finished!")
+        console.log("Crate and Barrel Finished!");
         test.equal( "All-Clad ® d5 10-Piece Cookware Set | Crate and Barrel", result.title );
-        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" )
+        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" );
 
       } else {
 
-        test.ok( false, err )
+        test.ok( false, err );
 
       }
 
@@ -100,21 +95,22 @@ exports['request'] = {
 
     var requestTimeout = setTimeout(function(){
 
-      test.ok( false, "REQUEST TIMED OUT!" )
+      test.ok( false, "REQUEST TIMED OUT!" );
 
-    }, 180000)
+    }, 180000);
 
     request.getDomFromUrl( "http://www.dickssportinggoods.com/product/index.jsp?productId=46722916&ab=TopNav_Footwear_MensFootwear_Basketball&cp=4413987.4417989", {}, function( err, result ){
 
-      clearTimeout(requestTimeout)
+      clearTimeout(requestTimeout);
 
       if( !err ){
-        console.log("Dicks Sporting Goods Finished!")
-        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" )
+
+        console.log("Dicks Sporting Goods Finished!");
+        test.ok( result.body.innerHTML.length > 0, "BODY IS NULL" );
 
       } else {
 
-        test.ok( false, err )
+        test.ok( false, err );
 
       }
 
